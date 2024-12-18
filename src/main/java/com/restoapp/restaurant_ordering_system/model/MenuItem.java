@@ -16,3 +16,4 @@
     private boolean available;
     private String imageUrl;
   }
+ 
