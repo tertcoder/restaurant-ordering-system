@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.restoapp.restaurant_ordering_system.model.MenuItem;
 import com.restoapp.restaurant_ordering_system.model.Order;
-
+import com.restoapp.restaurant_ordering_system.model.OrderItem;
 import com.restoapp.restaurant_ordering_system.repository.MenuItemRepository;
 import com.restoapp.restaurant_ordering_system.repository.OrderRepository;
 
@@ -35,7 +35,7 @@ public class OrderService {
     
     order.setTotalPrice(totalPrice); 
     order.setCreatedAt(LocalDateTime.now());
-    order.setStatus("Pending");
+    order.setStatus("PENDING");
 
     return orderRepository.save(order); 
   }
@@ -50,4 +50,38 @@ public class OrderService {
   public List<Order> getUserOrders(String userId) {
     return orderRepository.findByUserId(userId);
   }
+  public List<Order> getAllOrders(){
+    return orderRepository.findAll();
+  }
+
+  public Order updateOrderItems(String orderId, List<OrderItem> newItems) {
+    // Find the order
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new RuntimeException("Order not found"));
+
+    // If items list is empty, delete the order and return null
+    if (newItems == null || newItems.isEmpty()) {
+        orderRepository.deleteById(orderId);
+        return null;
+    }
+
+    // Calculate new total price
+    int totalPrice = newItems.stream()
+        .map(item -> {
+            MenuItem menuItem = menuItemRepository.findById(item.getMenuItemId())
+                .orElseThrow(() -> new RuntimeException("Menu Item not found"));
+            
+            return BigDecimal.valueOf(menuItem.getPrice())
+                    .multiply(BigDecimal.valueOf(item.getQuantity()));
+        })
+        .reduce(BigDecimal.ZERO, BigDecimal::add)
+        .intValue();
+
+    // Update order
+    order.setItems(newItems);
+    order.setTotalPrice(totalPrice);
+
+    // Save and return
+    return orderRepository.save(order);
+}
 }
