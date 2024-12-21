@@ -29,4 +29,13 @@ public class MenuItemService {
 
     return menuItemRepository.save(existingItem);
   }
+
+  public void deleteMenuItem(String id) {
+    menuItemRepository.deleteById(id);
+}
+
+public MenuItem getMenuItem(String id) {
+    return menuItemRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Menu Item not found"));
+}
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -59,11 +60,32 @@ public class MenuItemController {
       return ResponseEntity.ok(menuItemService.getAvailableMenuItems());
   }
 
-  @PutMapping("/{id}")
-  public ResponseEntity<MenuItem> updateMenuItem(
-      @PathVariable String id, 
-      @RequestBody MenuItem menuItem
-  ) {
-      return ResponseEntity.ok(menuItemService.updateMenuItem(id, menuItem));
+  
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteMenuItem(@PathVariable String id) {
+      menuItemService.deleteMenuItem(id);
+      return ResponseEntity.ok().build();
   }
+
+@PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+public ResponseEntity<MenuItem> updateMenuItem(
+    @PathVariable String id,
+    @RequestParam("name") String name,
+    @RequestParam("price") int price,
+    @RequestParam("category") String category,
+    @RequestParam(value = "image", required = false) MultipartFile image
+) {
+    MenuItem existingItem = menuItemService.getMenuItem(id);
+    existingItem.setName(name);
+    existingItem.setPrice(price);
+    existingItem.setCategory(category);
+    
+    if (image != null) {
+        String imageUrl = fileStorageConfig.storeFile(image);
+        existingItem.setImageUrl("/uploads/" + imageUrl);
+    }
+    
+    return ResponseEntity.ok(menuItemService.updateMenuItem(id, existingItem));
+}
 }
