@@ -1,10 +1,9 @@
 services:
   - type: web
-    name: spring-boot-api
+    name: restaurant-ordering-system
     env: docker
     dockerfilePath: ./Dockerfile
     plan: free
-    healthCheckPath: /actuator/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
